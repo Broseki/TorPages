@@ -9,6 +9,8 @@ but it would be nice to refer to CaveFox Telecom and Michael Canning as it is al
 for work.
 
 For more information contact Michael Canning - mcanning(at)tutanota(dot)com
+
+Check out our GitHub repository and consider contributing [https://github.com/mcanningjr/TorPages]
 '''
 
 from flask import render_template   # Used to render HTML pages
