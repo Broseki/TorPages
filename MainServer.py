@@ -76,7 +76,7 @@ def postPage():
 
 @app.route('/p/<ID>', methods=['GET'])    # This section deals with GET requests for user pages
 def getPage(ID):
-    if os.path.isfile('templates/userpages/' + str(ID).lower()):   # Checks to see if the requested page exists
+    if os.path.isfile('templates/userpages/' + str(ID).lower() + '.html'):   # Checks to see if the requested page exists
         return(render_template('userpages/' + str(ID).lower() + '.html'))   # The ID section of the request is converted to lower case
     else:   # Returns a 404 if the page does not exist
         return'Error 404: The requested page does not exist!'
