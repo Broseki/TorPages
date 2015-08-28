@@ -23,12 +23,12 @@ import uuid   # Used to generate the modification keys
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'Enter_Onion_Address_Here'
-
+site_url = 'Put Web Address Here'
+admin_email = 'Put Admin EMail Here'
 
 @app.route('/', methods=['GET'])   # This section deals with serving the home page of the service
 def index():
-    return(render_template('index.html'))
+    return(render_template('index.html', admin_email=admin_email))
 
 
 @app.route('/', methods=['POST'])   # This section deals with publishing content via POST requests
@@ -93,6 +93,6 @@ def getRules():
 
 @app.route('/about', methods=['GET'])   # This section returns the about page when requested
 def getAbout():
-    return(render_template("about.html"))
+    return(render_template("about.html", site_url=site_url, admin_email=admin_email))
 
 app.run(debug=False)   # Starts the Flask server with debugging set to False
