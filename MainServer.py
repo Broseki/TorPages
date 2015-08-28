@@ -23,6 +23,9 @@ import uuid   # Used to generate the modification keys
 app = Flask(__name__)   # Defines Flask Application
 
 
+site_url = 'Enter_Onion_Address_Here'
+
+
 @app.route('/', methods=['GET'])   # This section deals with serving the home page of the service
 def index():
     return(render_template('index.html'))
@@ -51,7 +54,7 @@ def postPage():
         file = open('keys/' + str(newid) + '.key', 'w')   # Opens a new file to store the modification key
         file.write(key)   # Writes the key to file
         file.close()   # Closes the key file
-        return render_template('return.html', ID=newid, key=key)   # Returns a page with the user's new page info
+        return render_template('return.html', ID=newid, key=key, site_url=site_url)   # Returns a page with the user's new page info
     else:   # This section is for modification of an existing page
         if os.path.isfile('keys/' + str(oldid) + '.key'):   # Checks to see if the page exists by checking for Mod Key Existence
             file = open('keys/' + str(oldid) + '.key', 'r')   # Opens the key file for verification
@@ -67,7 +70,7 @@ def postPage():
                 file = open('templates/userpages/' + str(oldid) + '.html', 'w')   # Opens a new file for the page
                 file.write(code)   # Writes the new code to the new key file
                 file.close()   # Closes the key file
-                return render_template('return.html', ID=oldid, key=newkey)   # Returns a page with the user's new page info
+                return render_template('return.html', ID=oldid, key=newkey, site_url=site_url)   # Returns a page with the user's new page info
             else:   # Returns an error to the user is the modification key used is invalid
                 return 'Invalid Key!'
         else:   # Returns an error if the page being modified never existed in the first place
