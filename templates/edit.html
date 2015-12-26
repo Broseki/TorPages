@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit a Post</title>
+</head>
+<body bgcolor="#E7E6B3">
+    <a href="/">Home</a>&nbsp;<a href="/rules">Rules</a>&nbsp;<a href="/about">About</a>&nbsp;<a href="/p/blog">Blog</a>&nbsp;<a href="/p/adminlog">Admin Log</a>
+    <h1>TorPages|Edit a Post</h1>
+    <form method="post" action="/edit">
+        <input type="hidden" name="pageid" value="{{ pageid }}">
+        <textarea name="code" cols="80" rows="15">{{ code }}</textarea><br>
+        <br>
+        <input type="submit" value="Publish" />
+    </form>
+</body>
+</html>

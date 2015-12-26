@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TorPages|Admin Console</title>
+</head>
+<body bgcolor="#E7E6B3">
+    <a href="/">Home</a>&nbsp;<a href="/rules">Rules</a>&nbsp;<a href="/about">About</a>&nbsp;<a href="/p/blog">Blog</a>&nbsp;<a href="/p/adminlog">Admin Log</a>
+    <br>
+    <l>####################################</l>
+    <h1>TorPages|Admin Console</h1>
+    <l>####################################</l>
+    <p><a href="/create">New Page</a>&nbsp;|&nbsp;<a href="/changepass">Change Password</a>&nbsp;|&nbsp;<a href="/legacy">Import Legacy Page</a>&nbsp;|&nbsp;<a href="/logout">Logout</a></p>
+    <h3>My Sites:</h3>
+    {% for x in my_sites %}
+    <p><a href="/p/{{ x }}">{{ x }}</a>&nbsp;|&nbsp;<a href="/edit/{{ x }}">Edit</a>&nbsp;|&nbsp;<a href="/delete/{{ x }}">Delete</a></p>
+    {% endfor %}
+    <h3>All Sites:</h3>
+    {% for x in sites %}
+    <p><a href="/p/{{ x }}">{{ x }}</a>&nbsp;|&nbsp;<a href="/edit/{{ x }}">Edit</a>&nbsp;|&nbsp;<a href="/delete/{{ x }}">Delete</a></p>
+    {% endfor %}
+</body>
+</html>

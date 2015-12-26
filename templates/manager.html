@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TorPages|Control Panel</title>
+</head>
+<body bgcolor="#E7E6B3">
+    <a href="/">Home</a>&nbsp;<a href="/rules">Rules</a>&nbsp;<a href="/about">About</a>&nbsp;<a href="/p/blog">Blog</a>&nbsp;<a href="/p/adminlog">Admin Log</a>
+    <br>
+    <l>####################################</l>
+    <h1>TorPages|Site Management Console</h1>
+    <l>####################################</l>
+    <p>{{ special }}</p>
+    <p>Welcome {{ username }}!</p>
+    <p><a href="/create">New Page</a>&nbsp;|&nbsp;<a href="/changepass">Change Password</a>&nbsp;|&nbsp;<a href="/legacy">Import Legacy Page</a>&nbsp;|&nbsp;<a href="/logout">Logout</a></p>
+    <h3>Sites:</h3>
+    {% for x in sites %}
+    <p><a href="/p/{{ x }}">{{ x }}</a>&nbsp;|&nbsp;<a href="/edit/{{ x }}">Edit</a>&nbsp;|&nbsp;<a href="/delete/{{ x }}">Delete</a></p>
+    {% endfor %}
+</body>
+</html>
