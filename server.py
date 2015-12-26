@@ -277,4 +277,4 @@ def changepassPost():
 
 app.secret_key = os.urandom(64)   # Generates a random key for the session cookies
 
-app.run(debug=True)   # Starts the Flask server with debugging set to False
+app.run(debug=False)   # Starts the Flask server with debugging set to False
