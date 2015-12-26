@@ -17,7 +17,7 @@ from flask import render_template   # Used to render HTML pages
 from flask import Flask   # Core web server
 from flask import request   # Used to process POST requests
 from flask import session   # Used to handle logins
-from flask import url_for, redirect   # Used to handle redirecting
+from flask import redirect   # Used to handle redirecting
 import random   # Used to generate random page IDs
 import os   # Used to check for/delete files
 import hashlib   # Used to hash the website modification keys
@@ -26,8 +26,8 @@ import pickle
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'PLACE_SITE_ADDRESS_HERE'
-admin_email = 'PLACE_ADMIN_EMAIL_HERE'
+site_url = 'SITE_URL_HER'
+admin_email = 'SITE_EMAIL_HERE'
 active = []   # Used to keep a list of logged in users
 record = {}   # Used to keep a list of pages, and their owners for the admins
 if os.path.isfile("pages.data"):   # checks to see if the file that stores the record dictionary exists
@@ -36,7 +36,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['DEFINE_ADMIN_ACCOUNTS_HERE']   # Define the administrator accounts
+administrators = ['ADMIN_ACCOUNTS_HERE']   # Define the administrator accounts
 
 @app.route('/rules', methods=['GET'])  # This section returns the rules page when requested
 def getRules():
@@ -157,7 +157,6 @@ def createget():
 def createpost():
     if session.get('username') not in active:   # Checks to see if the user is logged in
         return('Please Login to Create a Page')
-    code = request.form['code']   # Gets the HTML/Text from the POST request
     customlink = str(request.form['customlink']).lower()   # Gets the custom page name (Optional when first posting a site)
     if os.path.isfile('templates/userpages/' + customlink + '.html') and customlink is not '':   # Checks to see if the custom link is taken if one is requested
         return 'Link is Taken!'
@@ -169,7 +168,7 @@ def createpost():
             return 'Custom Link Must Only Contain Letters, Underscores, Dashes, and Numbers'
         newid = customlink   # Redefines the ID to the custom one if a user chose one
     file = open('templates/userpages/' + str(newid) + '.html', 'w')   # Opens a new HTML file
-    file.write(code)   # Writes code to HTML file
+    file.write(request.form["code"].encode('utf-8'))   # Writes code to HTML file
     file.close()   # Closes HTML file
     sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))   # Loads a list of the user's sites
     sites.append(str(newid))   # Adds the page to the user's list of pages
@@ -196,11 +195,10 @@ def editget(postid):   # Opens the edit page if the user is authroized to edit t
 def editpost():
     sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
     pageid = request.form['pageid']
-    code = request.form["code"]
     if ((pageid in sites) or (session.get('username') in administrators)):
         os.remove('templates/userpages/' + str(pageid) + '.html')   # Removes the old page
         file = open('templates/userpages/' + str(pageid) + '.html', 'w')   # Opens a new file for the page
-        file.write(code)   # Writes the new code to the new key file
+        file.write(request.form["code"].encode('utf-8'))   # Writes the new code to the new key file
         file.close()   # Closes the key file
         return render_template('return.html', ID=pageid, site_url=site_url)   # Returns a page with the user's new page info
     else:
@@ -276,5 +274,8 @@ def changepassPost():
 
 
 app.secret_key = os.urandom(64)   # Generates a random key for the session cookies
-
-app.run(debug=False)   # Starts the Flask server with debugging set to False
+while True:
+    try:
+        app.run(debug=True)   # Starts the Flask server with debugging set to False
+    except:
+        print("Error!")
