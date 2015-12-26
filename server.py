@@ -26,8 +26,8 @@ import pickle
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'SITE_URL_HER'
-admin_email = 'SITE_EMAIL_HERE'
+site_url = 'SITE_ADDRESS_HERE'
+admin_email = 'ADMIN_EMAIL_HERE'
 active = []   # Used to keep a list of logged in users
 record = {}   # Used to keep a list of pages, and their owners for the admins
 if os.path.isfile("pages.data"):   # checks to see if the file that stores the record dictionary exists
@@ -36,7 +36,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['ADMIN_ACCOUNTS_HERE']   # Define the administrator accounts
+administrators = ['PUT_ADMINS_HERE']   # Define the administrator accounts
 
 @app.route('/rules', methods=['GET'])  # This section returns the rules page when requested
 def getRules():
@@ -184,7 +184,7 @@ def editget(postid):   # Opens the edit page if the user is authroized to edit t
         sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
         if ((str(postid) in sites) or (session.get('username') in administrators)):   # Checks to see if the user is authroized to edit the page or is an admin
             code = open('templates/userpages/' + str(postid) + '.html', 'r')
-            return(render_template("edit.html", pageid = postid, code = code.read()))
+            return(render_template("edit.html", pageid = postid, code = (code.read()).decode('utf-8')))
         else:
             return("Access Denied!")
     except:
@@ -276,6 +276,6 @@ def changepassPost():
 app.secret_key = os.urandom(64)   # Generates a random key for the session cookies
 while True:
     try:
-        app.run(debug=True)   # Starts the Flask server with debugging set to False
+        app.run(debug=False)   # Starts the Flask server with debugging set to False
     except:
         print("Error!")
