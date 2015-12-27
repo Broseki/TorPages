@@ -26,8 +26,8 @@ import pickle
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'SITE_URL_GOES_HERE'
-admin_email = 'EMAIL_ADDRESS_GOES_HERE'
+site_url = 'PUT_SITE_ADDRESS_HERE'
+admin_email = 'PUT_ADMIN_EMAIL_HERE'
 active = []   # Used to keep a list of logged in users
 record = {}   # Used to keep a list of pages, and their owners for the admins
 if os.path.isfile("pages.data"):   # checks to see if the file that stores the record dictionary exists
@@ -36,7 +36,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['ADMINISTRATOR_NAMES_GO_HERE']   # Define the administrator accounts
+administrators = ['PUT_ADMINS_HERE']   # Define the administrator accounts
 
 @app.route('/rules', methods=['GET'])  # This section returns the rules page when requested
 def getRules():
@@ -60,6 +60,8 @@ def registeradd():   # This section deals with registering new users
     username = request.form["username"]
     password = request.form["password"]
     password2 = request.form["confirm_password"]
+    if username.isalnum() is False:
+        return("That Username is Invalid!")
     if password != password2:
         return("The Passwords Entered Do Not Match!")
     else:
@@ -164,8 +166,8 @@ def createpost():
     while os.path.isfile('templates/userpages/' + str(id) + '.html'):   # Checks to see if the ID is take and creates a new one if it is
         newid = random.randint(1, 99999999999999999999)
     if customlink is not '':    # Checks if the user set a custom post ID
-        if ' ' in customlink or '?' in customlink or '#' in customlink or '$' in customlink or '@' in customlink or '%' in customlink:   # Checks custom string for common invalid characters
-            return 'Custom Link Must Only Contain Letters, Underscores, Dashes, and Numbers'
+        if customlink.isalnum() is False:   # Checks custom string for common invalid characters
+            return 'Custom Links Must Only Contain Letters, and Numbers'
         newid = customlink   # Redefines the ID to the custom one if a user chose one
     file = open('templates/userpages/' + str(newid) + '.html', 'w')   # Opens a new HTML file
     file.write(request.form["code"].encode('utf-8'))   # Writes code to HTML file
@@ -273,7 +275,7 @@ def changepassPost():
         return(redirect("/login"))
 
 
-app.secret_key = os.urandom(64)   # Generates a random key for the session cookies
+app.secret_key = os.urandom(2048)   # Generates a random key for the session cookies
 while True:
     try:
         app.run(debug=False)   # Starts the Flask server with debugging set to False
