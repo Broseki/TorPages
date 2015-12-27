@@ -22,12 +22,12 @@ import random   # Used to generate random page IDs
 import os   # Used to check for/delete files
 import hashlib   # Used to hash the website modification keys
 import pickle
-import bcrypt
+import bcrypt   # Used to encrypt the user passwords
 
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'SITE_ADDRESS_GOES_HERE'
+site_url = 'SERVER_ADDRESS_GOES_HERE'
 admin_email = 'ADMIN_EMAIL_GOES_HERE'
 active = []   # Used to keep a list of logged in users
 record = {}   # Used to keep a list of pages, and their owners for the admins
@@ -37,7 +37,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['ADMIN_ACCOUNTS_GO_HERE']   # Define the administrator accounts
+administrators = ['DEFINE_ADMIN_ACCOUNTS_HERE']   # Define the administrator accounts
 
 @app.route('/rules', methods=['GET'])  # This section returns the rules page when requested
 def getRules():
@@ -69,9 +69,9 @@ def registeradd():   # This section deals with registering new users
         if os.path.isfile("userdata/" + username + ".password"):   # Checks to see of the username's password file exists
             return("That Username Has Already Been Taken!")
         else:
-            salt = bcrypt.gensalt(14)
+            salt = bcrypt.gensalt(14)   # Generates the password salt
             hashedPassword = str(bcrypt.hashpw(str(password), salt))   # Hashes the password
-            pickle.dump(salt, open("userdata/" + username + ".salt", "wb"))
+            pickle.dump(salt, open("userdata/" + username + ".salt", "wb"))   # Saves the password salt
             pickle.dump(hashedPassword, open("userdata/" + username + ".password", "wb"))   # Sves the hashed password
             ownedSites = []
             pickle.dump(ownedSites, open("userdata/" + username + ".sites", "wb"))   # Saves a blank list of owned sites
@@ -230,8 +230,12 @@ def getPage(ID):
     else:   # Returns a 404 if the page does not exist
         return'Error 404: The requested page does not exist!'
 
+@app.route("/delete/<ID>", methods = ["GET"])
+def deletePageGet(ID):
+    return(render_template("confirmdelete.html", x = ID))
 
-@app.route("/delete/<ID>", methods = ["GET"])   # Deletes the page that is requested for deletion
+
+@app.route("/confirmeddelete/<ID>", methods = ["GET"])   # Deletes the page that is requested for deletion
 def deletePage(ID):
     if session.get('username') in active:
         sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
