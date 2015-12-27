@@ -7,11 +7,12 @@
 <body bgcolor="#E7E6B3">
     <a href="/">Home</a>&nbsp;<a href="/rules">Rules</a>&nbsp;<a href="/about">About</a>&nbsp;<a href="/p/blog">Blog</a>&nbsp;<a href="/p/adminlog">Admin Log</a>
     <h1>TorPages|New Post</h1>
+    <script src="//s3.amazonaws.com/cavefoxcdn/ckeditor/ckeditor.js" type="text/javascript"></script>
     <form method="post" action="">
         Custom Post ID (Not Required):&nbsp;
 		<input type="text" name="customlink"><br>
         <br>
-		<textarea name="code" cols="80" rows="15">Enter your HTML code here...</textarea><br>
+        <textarea class="ckeditor" name="code"></textarea>
         <br>
 		<input type="submit" value="Publish" />
     </form>

@@ -26,8 +26,8 @@ import pickle
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'SITE_ADDRESS_HERE'
-admin_email = 'ADMIN_EMAIL_HERE'
+site_url = 'SITE_URL_GOES_HERE'
+admin_email = 'EMAIL_ADDRESS_GOES_HERE'
 active = []   # Used to keep a list of logged in users
 record = {}   # Used to keep a list of pages, and their owners for the admins
 if os.path.isfile("pages.data"):   # checks to see if the file that stores the record dictionary exists
@@ -36,7 +36,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['PUT_ADMINS_HERE']   # Define the administrator accounts
+administrators = ['ADMINISTRATOR_NAMES_GO_HERE']   # Define the administrator accounts
 
 @app.route('/rules', methods=['GET'])  # This section returns the rules page when requested
 def getRules():
