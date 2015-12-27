@@ -22,12 +22,13 @@ import random   # Used to generate random page IDs
 import os   # Used to check for/delete files
 import hashlib   # Used to hash the website modification keys
 import pickle
+import bcrypt
 
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'PUT_SITE_ADDRESS_HERE'
-admin_email = 'PUT_ADMIN_EMAIL_HERE'
+site_url = 'SITE_ADDRESS_GOES_HERE'
+admin_email = 'ADMIN_EMAIL_GOES_HERE'
 active = []   # Used to keep a list of logged in users
 record = {}   # Used to keep a list of pages, and their owners for the admins
 if os.path.isfile("pages.data"):   # checks to see if the file that stores the record dictionary exists
@@ -36,7 +37,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['PUT_ADMINS_HERE']   # Define the administrator accounts
+administrators = ['ADMIN_ACCOUNTS_GO_HERE']   # Define the administrator accounts
 
 @app.route('/rules', methods=['GET'])  # This section returns the rules page when requested
 def getRules():
@@ -68,7 +69,9 @@ def registeradd():   # This section deals with registering new users
         if os.path.isfile("userdata/" + username + ".password"):   # Checks to see of the username's password file exists
             return("That Username Has Already Been Taken!")
         else:
-            hashedPassword = str(hashlib.sha512(str(password)).hexdigest())   # Hashes the password
+            salt = bcrypt.gensalt(14)
+            hashedPassword = str(bcrypt.hashpw(str(password), salt))   # Hashes the password
+            pickle.dump(salt, open("userdata/" + username + ".salt", "wb"))
             pickle.dump(hashedPassword, open("userdata/" + username + ".password", "wb"))   # Sves the hashed password
             ownedSites = []
             pickle.dump(ownedSites, open("userdata/" + username + ".sites", "wb"))   # Saves a blank list of owned sites
@@ -131,9 +134,10 @@ def loginpost():
     username = request.form["username"]
     password = request.form["password"]
     if os.path.isfile("userdata/" + username + ".password"):   # Checks to see if the user exists
-        hashedPassword = str(hashlib.sha512(str(password)).hexdigest())   # Hashes the password entered
+        salt = pickle.load(open("userdata/" + username + ".salt", "rb"))
         passwordCheck = pickle.load(open("userdata/" + username + ".password", "rb"))   # Loads the stored password
-        if str(hashedPassword) != str(passwordCheck):   # Verifies the password
+        hashed = str(bcrypt.hashpw(str(password), salt))
+        if str(hashed) != str(passwordCheck):   # Verifies the password
             return("The Password That Was Entered Was Incorrect!")
         else:
             session.pop('username', None)   # Removes any session that exists
@@ -268,7 +272,9 @@ def changepassPost():
         if password != password2:
             return("The Passwords Entered Do Not Match!")
         else:
-            hashedPassword = str(hashlib.sha512(str(password)).hexdigest())
+            salt = bcrypt.gensalt(14)
+            hashedPassword = str(bcrypt.hashpw(str(password), salt))
+            pickle.dump(salt, open("userdata/" + session.get('username') + ".salt", "wb"))
             pickle.dump(hashedPassword, open("userdata/" + session.get('username') + ".password", "wb"))
             return(redirect("/manage"))
     else:
