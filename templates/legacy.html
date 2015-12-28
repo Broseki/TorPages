@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>TorPages|Import a Legacy Page</title>
+    <title>TorPages | Import a Legacy Page</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -67,6 +67,19 @@
       <div class="jumbotron">
           <h1>Legacy Page Import</h1>
           <HR>
+                   {% if error == 1 %}
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                &nbsp;That page does not exist, or has already been imported.
+            </div>
+          {% elif error == 2 %}
+          <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                &nbsp;The modification key entered is incorrect.
+          </div>
+          {% endif %}
           <form method="post" action="/legacy">
           Post ID:<br>
           <input type="text" name="postID"><br><br>

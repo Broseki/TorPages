@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-    <title>TorPages|New User Registration</title>
+    <title>TorPages | New User Registration</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -57,8 +57,28 @@
 
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
+
           <h1>Create a TorPages Account</h1>
           <HR>
+          {% if error == 1 %}
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                &nbsp;Usernames must only contain letters, and numbers; and must be shorter then 20 characters.
+            </div>
+          {% elif error == 2 %}
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                &nbsp;The entered passwords do not match.
+            </div>
+          {% elif error == 3 %}
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                &nbsp;That username has already been taken.
+            </div>
+          {% endif %}
           <form method="post" action="/register">
 		    Username:<br>
             <input type="text" name="username"><br><br>

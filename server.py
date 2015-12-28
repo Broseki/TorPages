@@ -53,12 +53,12 @@ def registeradd():   # This section deals with registering new users
     password = request.form["password"]
     password2 = request.form["confirm_password"]
     if (username.isalnum() is False or len(username) > 20):
-        return("Usernames Must Only Contain Letters, and Numbers; and must be shorter then 20 characters")
+        return(render_template("register.html", error=1))
     if password != password2:
-        return("The Passwords Entered Do Not Match!")
+        return(render_template("register.html", error=2))
     else:
         if os.path.isfile("userdata/" + username + ".password"):   # Checks to see of the username's password file exists
-            return("That Username Has Already Been Taken!")
+            return(render_template("register.html", error=3))
         else:
             salt = bcrypt.gensalt(14)   # Generates the password salt
             hashedPassword = str(bcrypt.hashpw(str(password), salt))   # Hashes the password
@@ -104,11 +104,12 @@ def legacypost():   # This section deals with importing pages under the old syst
                     record.update({str(postID): session.get("username")})   # Updates the record dictionary
                     pickle.dump(record, open("pages.data", "wb"))   # Saves the record dictionary
                     os.remove("keys/" + str(postID) + '.key')   # Removes the key file
+                    session['error'] = 3
                     return(redirect('/manage'))   # Returns a page with the user's new page info
                 else:   # Returns an error to the user is the modification key used is invalid
-                    return 'Invalid Key!'
+                    return render_template("legacy.html", username=session.get('username'), error=2)
             else:   # Returns an error if the page being modified never existed in the first place
-                return 'Page Does Not Exist!'
+                return render_template("legacy.html", username=session.get('username'), error=1)
         else:
             return(redirect("/login"))
     except:
@@ -129,20 +130,20 @@ def loginpost():
         passwordCheck = pickle.load(open("userdata/" + username + ".password", "rb"))   # Loads the stored password
         hashed = str(bcrypt.hashpw(str(password), salt))
         if str(hashed) != str(passwordCheck):   # Verifies the password
-            return("The Password That Was Entered Was Incorrect!")
+            return(render_template("index.html", admin_email=admin_email, error=1))
         else:
             session.pop('username', None)   # Removes any session that exists
             session['username'] = username   # Sets the session
             return(redirect('/manage'))   # Sends the user to the management page
     else:
-        return("That User Does Not Exist!")
+        return(render_template("index.html", admin_email=admin_email, error=1))
 
 
 @app.route("/logout", methods = ["GET"])   # Logs out the user
 def logout():
     active.remove(session.get('username'))   # Removes the user from the active users list
     session.pop('username', None)   # Closes the user's session
-    return(redirect('/'))
+    return(render_template('index.html', error=2, admin_email=admin_email))
 
 
 @app.route("/create", methods = ["GET"])   # Returns the create a news page page
@@ -156,13 +157,13 @@ def createpost():
         return('Please Login to Create a Page')
     customlink = str(request.form['customlink']).lower()   # Gets the custom page name (Optional when first posting a site)
     if os.path.isfile('templates/userpages/' + customlink + '.html') and customlink is not '':   # Checks to see if the custom link is taken if one is requested
-        return 'Link is Taken!'
+        return render_template('new.html', code=request.form["code"], username=session.get('username'), error=2)
     newid = random.randint(1, 99999999999999999999)   # Generates a new page ID
     while os.path.isfile('templates/userpages/' + str(id) + '.html'):   # Checks to see if the ID is take and creates a new one if it is
         newid = random.randint(1, 99999999999999999999)
     if customlink is not '':    # Checks if the user set a custom post ID
         if(customlink.isalnum() is False or len(customlink) > 20):   # Checks custom string for common invalid characters
-            return 'Custom Links Must Only Contain Letters, and Numbers; and must be shorter then 20 characters'
+            return(render_template('new.html', code=request.form["code"], username=session.get('username'), error=1))
         newid = customlink   # Redefines the ID to the custom one if a user chose one
     file = open('templates/userpages/' + str(newid) + '.html', 'w')   # Opens a new HTML file
     file.write(request.form["code"].encode('utf-8'))   # Writes code to HTML file
@@ -204,12 +205,14 @@ def editpost():
 @app.route("/manage", methods = ["GET"])   # Loads the admin page or management page based on user rights
 def manage():
     try:
+        error = session.get('error')
+        session.pop('error', None)
         sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
         if session.get('username') not in active:
             active.append(session.get('username'))
         if session.get('username') in administrators:
-            return(render_template("admin.html", sites = record, my_sites = sites, username = session.get("username")))
-        return(render_template("manager.html", sites = sites, username = session.get("username")))
+            return(render_template("admin.html", error=error, sites = record, my_sites = sites, username = session.get("username")))
+        return(render_template("manager.html", error=error, sites = sites, username = session.get("username")))
     except:
         return(redirect("/login"))
 
@@ -236,6 +239,7 @@ def deletePage(ID):
             pickle.dump(sites, open("userdata/" + session.get('username') + ".sites", "wb"))
             del record[str(ID)]
             pickle.dump(record, open("pages.data", "wb"))
+            session['error'] = 1
             return(redirect("/manage"))
         elif session.get('username') in administrators:
             sites = pickle.load(open("userdata/" + record[str(ID)] + ".sites", "rb"))
@@ -244,6 +248,7 @@ def deletePage(ID):
             pickle.dump(sites, open("userdata/" + record[str(ID)] + ".sites", "wb"))
             del record[str(ID)]
             pickle.dump(record, open("pages.data", "wb"))
+            session['error'] = 1
             return(redirect("/manage"))
         else:
             return("Access Denied!")
@@ -271,6 +276,7 @@ def changepassPost():
             hashedPassword = str(bcrypt.hashpw(str(password), salt))
             pickle.dump(salt, open("userdata/" + session.get('username') + ".salt", "wb"))
             pickle.dump(hashedPassword, open("userdata/" + session.get('username') + ".password", "wb"))
+            session['error'] = 2
             return(redirect("/manage"))
     else:
         return(redirect("/login"))
