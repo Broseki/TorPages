@@ -27,7 +27,7 @@ import bcrypt   # Used to encrypt the user passwords
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'SITE_URL_GOES_HERE'
+site_url = 'SITE_ADDRESS_GOES_HERE'
 admin_email = 'ADMIN_EMAIL_GOES_HERE'
 active = []   # Used to keep a list of logged in users
 record = {}   # Used to keep a list of pages, and their owners for the admins
@@ -37,7 +37,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['ADMIN_ACCOUNT_GOES_HERE']   # Define the administrator accounts
+administrators = ['ADMIN_ACCOUNTS_GO_HERE']   # Define the administrator accounts
 
 
 @app.route("/", methods = ["GET"])
@@ -53,7 +53,7 @@ def registeradd():   # This section deals with registering new users
     password = request.form["password"]
     password2 = request.form["confirm_password"]
     if (username.isalnum() is False or len(username) > 20):
-        return("Usernames Must Only Contain Letters, and Numbers; and must be shorter then 20 character")
+        return("Usernames Must Only Contain Letters, and Numbers; and must be shorter then 20 characters")
     if password != password2:
         return("The Passwords Entered Do Not Match!")
     else:
@@ -162,7 +162,7 @@ def createpost():
         newid = random.randint(1, 99999999999999999999)
     if customlink is not '':    # Checks if the user set a custom post ID
         if(customlink.isalnum() is False or len(customlink) > 20):   # Checks custom string for common invalid characters
-            return 'Custom Links Must Only Contain Letters, and Numbers; and must be shorter then 20 character'
+            return 'Custom Links Must Only Contain Letters, and Numbers; and must be shorter then 20 characters'
         newid = customlink   # Redefines the ID to the custom one if a user chose one
     file = open('templates/userpages/' + str(newid) + '.html', 'w')   # Opens a new HTML file
     file.write(request.form["code"].encode('utf-8'))   # Writes code to HTML file
