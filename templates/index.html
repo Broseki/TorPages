@@ -1,24 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
     <title>TorPages</title>
-</head>
-<body bgcolor="#E7E6B3">
-	<!-- If you want to know what makes this site tick you don't need to snoop, this project is
-	 open source, and posted on GitHub (https://github.com/mcanningjr/TorPages) -->
-    <p>{{ special }}</p>
-	<a href="/">Home</a>&nbsp;<a href="/rules">Rules</a>&nbsp;<a href="/about">About</a>&nbsp;<a href="/p/blog">Blog</a>&nbsp;<a href="/p/adminlog">Admin Log</a>
-	<H1>TorPages|Tor Hidden Personal Site Hosting</H1>
-    <p>####################################<br>
-	<b>All posts must follow the posted <a href="/rules">rules</a></b><br>
-	<b>Report rule violations to {{ admin_email }}</b><br>
-    ####################################</P>
-	<p><a href="/login">Login</a>&nbsp;|&nbsp;<a href="/register">Register</a></p>
-    <P>####################################</P>
-	<P>Designed by <a href="https://cavefox.net">CaveFox Telecommunications</a></P>
-    <P>Everybody has a right to share their opinions, this is a platform to do so.</P>
-    <p>The operators of this site do not endorse any content published by users</P>
-	<p>Feel free to <a href="http://www.kopimi.com/">Kopimi!</a></p>
-</body>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">TorPages</a> | <a class="navbar-text" href="/p/blog">Developer Blog</a> | <a class="navbar-text" href="/p/adminlog">Moderation Log</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <form class="navbar-form navbar-right" method="post" action="/login">
+            <div class="form-group">
+              <input name="username" type="text" placeholder="Username" class="form-control">
+            </div>
+            <div class="form-group">
+              <input name="password" type="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+            <a href="/register"><button type="button" class="btn btn-danger">Register</button></a>
+          </form>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <br>
+    <br>
+    <div class="jumbotron">
+      <div class="container">
+        <h1>TorPages</h1>
+        <p>TorPages allows users to publish web pages anonymously and without charge.</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+          <h2>Rules</h2>
+          <p><b>Content Must Follow the Following Rules:</b>
+          <br><br><b>1.</b> All Content Must Follow US Law<br><br>
+              <b>2.</b> Content Must Not Encourage Violation of US Law<br><br>
+              <b>3.</b> Content Must Not Promote Harming of Vulnerable Individuals (eg. Children)<br><br>
+              <i>If these rules are followed your content is safe here</i>
+          </p>
+        </div>
+        <div class="col-md-4">
+          <h2>How to Report Rule Violations</h2>
+          <p>Please report any rule violations to {{ admin_email }}</p>
+        </div>
+        <div class="col-md-4">
+          <h2>Contribute to TorPages</h2>
+          <p>TorPages is an open source project. Feel free to check out our GitHub repository!<br><br>
+          <a href="https://github.com/mcanningjr/TorPages"><button type="button" class="btn btn-primary">Visit GitHub</button></a></p>
+        </div>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p><a href="http://kopimi.com">Kopimi</a></p>
+      </footer>
+    </div> <!-- /container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  </body>
 </html>

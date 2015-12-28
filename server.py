@@ -27,7 +27,7 @@ import bcrypt   # Used to encrypt the user passwords
 app = Flask(__name__)   # Defines Flask Application
 
 
-site_url = 'SERVER_ADDRESS_GOES_HERE'
+site_url = 'SITE_URL_GOES_HERE'
 admin_email = 'ADMIN_EMAIL_GOES_HERE'
 active = []   # Used to keep a list of logged in users
 record = {}   # Used to keep a list of pages, and their owners for the admins
@@ -37,16 +37,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['DEFINE_ADMIN_ACCOUNTS_HERE']   # Define the administrator accounts
-
-@app.route('/rules', methods=['GET'])  # This section returns the rules page when requested
-def getRules():
-    return(render_template("rules.html"))
-
-
-@app.route('/about', methods=['GET'])   # This section returns the about page when requested
-def getAbout():
-    return(render_template("about.html", site_url=site_url, admin_email=admin_email))
+administrators = ['ADMIN_ACCOUNTS_GO_HERE']   # Define the administrator accounts
 
 
 @app.route("/", methods = ["GET"])
@@ -88,7 +79,7 @@ def registerget():
 def legacyget():
     try:
         if session.get("username") in active:
-            return(render_template("legacy.html"))
+            return(render_template("legacy.html", username = session.get('username')))
         else:
             return(redirect("/login"))
     except:
@@ -126,7 +117,7 @@ def legacypost():   # This section deals with importing pages under the old syst
 
 @app.route("/login", methods = ["GET"])   # Returns the login page when requests
 def loginget():
-    return(render_template("login.html"))
+    return(redirect('/'))
 
 
 @app.route("/login", methods = ["POST"])   # This section logs in the user
@@ -151,12 +142,12 @@ def loginpost():
 def logout():
     active.remove(session.get('username'))   # Removes the user from the active users list
     session.pop('username', None)   # Closes the user's session
-    return(render_template("index.html", special="Logged Out Successfully!", admin_email=admin_email))
+    return(redirect('/'))
 
 
 @app.route("/create", methods = ["GET"])   # Returns the create a news page page
 def createget():
-    return(render_template("new.html"))
+    return(render_template("new.html", site_url = site_url, username = session.get('username')))
 
 
 @app.route("/create", methods = ["POST"])
@@ -190,7 +181,7 @@ def editget(postid):   # Opens the edit page if the user is authroized to edit t
         sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
         if ((str(postid) in sites) or (session.get('username') in administrators)):   # Checks to see if the user is authroized to edit the page or is an admin
             code = open('templates/userpages/' + str(postid) + '.html', 'r')
-            return(render_template("edit.html", pageid = postid, code = (code.read()).decode('utf-8')))
+            return(render_template("edit.html", pageid = postid, code = (code.read()).decode('utf-8'), username = session.get('username')))
         else:
             return("Access Denied!")
     except:
@@ -232,7 +223,7 @@ def getPage(ID):
 
 @app.route("/delete/<ID>", methods = ["GET"])
 def deletePageGet(ID):
-    return(render_template("confirmdelete.html", x = ID))
+    return(render_template("confirmdelete.html", x = ID, username = session.get('username')))
 
 
 @app.route("/confirmeddelete/<ID>", methods = ["GET"])   # Deletes the page that is requested for deletion
@@ -263,7 +254,7 @@ def deletePage(ID):
 @app.route("/changepass", methods = ["GET"])   # Serves the change password page if the user is logged in
 def changepassGet():
     if session.get('username') in active:
-        return(render_template("changepassword.html"))
+        return(render_template("changepassword.html", username = session.get('username')))
     else:
         return(redirect("/login"))
 

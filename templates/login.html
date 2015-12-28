@@ -1,22 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
     <title>TorPages|Login</title>
-</head>
-<body bgcolor="#E7E6B3">
-    <a href="/">Home</a>&nbsp;<a href="/rules">Rules</a>&nbsp;<a href="/about">About</a>&nbsp;<a href="/p/blog">Blog</a>&nbsp;<a href="/p/adminlog">Admin Log</a>
-    <br>
-    <l>####################################</l>
-    <h1>TorPages|Login</h1>
-    <l>####################################</l>
-<form method="post" action="/login">
-		<br>
-		Username:<br>
-        <input type="text" name="username"><br><br>
-		Password:<br>
-        <input type="password" name="password"><br><br>
-		<input type="submit" value="Login">
-	</form>
-</body>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <style>
+        body {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #eee;
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-signin .form-signin-heading,
+.form-signin .checkbox {
+  margin-bottom: 10px;
+}
+.form-signin .checkbox {
+  font-weight: normal;
+}
+.form-signin .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+    </style>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <form class="form-signin" method="post" action="/login">
+        <h2 class="form-signin-heading">TorPages Login</h2>
+        <label for="username" class="sr-only">Username</label>
+        <input name="username" type="text" id="username" class="form-control" placeholder="Username" required autofocus>
+        <label for="password" class="sr-only">Password</label>
+        <input name="password" type="password" id="password" class="form-control" placeholder="Password" required>
+        <button class="btn btn-lg btn-success btn-block" type="submit">Sign in</button>
+          <br>
+          <a href="/register"><button class="btn btn-lg btn-warning btn-block">Register</button></a>
+      </form>
+
+    </div> <!-- /container -->
+
+  </body>
 </html>
