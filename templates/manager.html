@@ -22,6 +22,7 @@
         .navbar {
         margin-bottom: 20px;
         }
+
     </style>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
@@ -63,13 +64,25 @@
 
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
-        <h2><b>My Pages</b></h2>
-        <HR>
-        {% for x in sites %}
-        <p><a href="/p/{{ x }}"><button type="button" class="btn btn-link"><b>{{ x }}</b></button></a>|&nbsp;&nbsp;<a href="/edit/{{ x }}"><button type="button" class="btn btn-warning">Edit</button></a>&nbsp;&nbsp;<a href="/delete/{{ x }}"><button type="button" class="btn btn-danger">Delete</button></a></p>
-          <HR>
-        {% endfor %}
-        <p></p>
+            <table class="table">
+        <thead>
+            <h2><b>My Pages</b></h2>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for x in sites %}
+            <tr>
+                <td style="width: 90px;"><a href="/p/{{ x }}"><button type="button" class="btn btn-link"><b>{{ x }}</b></button></a></td>
+                <td style="width: 90px;"><a href="/edit/{{ x }}"><button type="button" class="btn btn-warning">Edit</button></a></td>
+                <td><a href="/delete/{{ x }}"><button type="button" class="btn btn-danger">Delete</button></a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
       </div>
 
     </div> <!-- /container -->

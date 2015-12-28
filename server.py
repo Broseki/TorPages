@@ -37,7 +37,7 @@ else:
     pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['ADMIN_ACCOUNTS_GO_HERE']   # Define the administrator accounts
+administrators = ['ADMIN_ACCOUNT_GOES_HERE']   # Define the administrator accounts
 
 
 @app.route("/", methods = ["GET"])
@@ -52,8 +52,8 @@ def registeradd():   # This section deals with registering new users
     username = request.form["username"]
     password = request.form["password"]
     password2 = request.form["confirm_password"]
-    if username.isalnum() is False:
-        return("That Username is Invalid!")
+    if (username.isalnum() is False or len(username) > 20):
+        return("Usernames Must Only Contain Letters, and Numbers; and must be shorter then 20 character")
     if password != password2:
         return("The Passwords Entered Do Not Match!")
     else:
@@ -161,8 +161,8 @@ def createpost():
     while os.path.isfile('templates/userpages/' + str(id) + '.html'):   # Checks to see if the ID is take and creates a new one if it is
         newid = random.randint(1, 99999999999999999999)
     if customlink is not '':    # Checks if the user set a custom post ID
-        if customlink.isalnum() is False:   # Checks custom string for common invalid characters
-            return 'Custom Links Must Only Contain Letters, and Numbers'
+        if(customlink.isalnum() is False or len(customlink) > 20):   # Checks custom string for common invalid characters
+            return 'Custom Links Must Only Contain Letters, and Numbers; and must be shorter then 20 character'
         newid = customlink   # Redefines the ID to the custom one if a user chose one
     file = open('templates/userpages/' + str(newid) + '.html', 'w')   # Opens a new HTML file
     file.write(request.form["code"].encode('utf-8'))   # Writes code to HTML file
@@ -276,7 +276,7 @@ def changepassPost():
         return(redirect("/login"))
 
 
-app.secret_key = os.urandom(2048)   # Generates a random key for the session cookies
+app.secret_key = os.urandom(4096)   # Generates a random key for the session cookies
 while True:
     try:
         app.run(debug=False)   # Starts the Flask server with debugging set to False
