@@ -49,7 +49,7 @@ def getindex():   # This section returns the index page or the management page i
 
 @app.route("/register", methods = ["POST"])
 def registeradd():   # This section deals with registering new users
-    username = request.form["username"]
+    username = request.form["username"].lower()
     password = request.form["password"]
     password2 = request.form["confirm_password"]
     if (username.isalnum() is False or len(username) > 20):
@@ -125,7 +125,7 @@ def loginget():
 
 @app.route("/login", methods = ["POST"])   # This section logs in the user
 def loginpost():
-    username = request.form["username"]
+    username = request.form["username"].lower()
     password = request.form["password"]
     if os.path.isfile("userdata/" + username + ".password"):   # Checks to see if the user exists
         salt = pickle.load(open("userdata/" + username + ".salt", "rb"))
