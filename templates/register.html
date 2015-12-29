@@ -78,6 +78,12 @@
                 <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
                 &nbsp;That username has already been taken.
             </div>
+          {% elif error == 4 %}
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                &nbsp;The entered password was invalid.
+            </div>
           {% endif %}
           <form method="post" action="/register">
 		    Username:<br>

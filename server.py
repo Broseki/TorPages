@@ -56,6 +56,8 @@ def registeradd():   # This section deals with registering new users
         return(render_template("register.html", error=1))
     if password != password2:
         return(render_template("register.html", error=2))
+    if password == '':
+        return(render_template("register.html", error=4))
     else:
         if os.path.isfile("userdata/" + username + ".password"):   # Checks to see of the username's password file exists
             return(render_template("register.html", error=3))
@@ -270,7 +272,9 @@ def changepassPost():
         password = request.form["password"]
         password2 = request.form["confirm_password"]
         if password != password2:
-            return("The Passwords Entered Do Not Match!")
+            return(render_template('changepassword.html', username=session.get('username'), error=1))
+        if password == '':
+            return(render_template('changepassword.html', username=session.get('username'), error=2))
         else:
             salt = bcrypt.gensalt(14)
             hashedPassword = str(bcrypt.hashpw(str(password), salt))
