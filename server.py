@@ -25,15 +25,11 @@ import pymysql
 import uuid
 
 app = Flask(__name__)   # Defines Flask Application
-
-connection = pymysql.connect(host='localhost',
-                             user='torpages',
-                             password='udJGv4TfaAqMAyRJ',
-                             db='torpages',
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
-
-c = connection.cursor(pymysql.cursors.DictCursor)
+sqlhost = '127.0.0.1'
+sqluser = 'torpages'
+sqlpass = 'SQLPASSWORD'
+sqldb = 'torpages'
+sqlcharset = 'utf8mb4'
 
 site_url = 'http://m54wkp5ctdpummms.onion'
 admin_email = 'abuse@cavefox.net'
@@ -62,7 +58,16 @@ def registeradd():   # This section deals with registering new users
     if password == '':
         return(render_template("register.html", error=4))
     else:
+        connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+        c = connection.cursor(pymysql.cursors.DictCursor)
         if c.execute("SELECT * FROM users WHERE username = '" + username + "'") == 1:   # Checks to see of the username exists
+            connection.close()
+            c.close()
             return(render_template("register.html", error=3))
         else:
             salt = bcrypt.gensalt(14)   # Generates the password salt
@@ -70,6 +75,8 @@ def registeradd():   # This section deals with registering new users
             c.execute("INSERT INTO users VALUES ('" + str(username) + "', '" + hashedPassword + "', '" + salt + "');")
             connection.commit()
             session['username'] = username   # Logs the user in
+            c.close()
+            connection.close()
             return(redirect("/manage"))   # Redirects the user to the management page
 
 
@@ -101,10 +108,19 @@ def legacypost():   # This section deals with importing pages under the old syst
                 realkey = str(file.read())  # Reads the key file and sets it as variable realkey
                 file.close()   # Closes the keyfile
                 if str(realkey) == str(key) or str(postKey) == str(realkey):   # Checks for a valid modification key
+                    connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+                    c = connection.cursor(pymysql.cursors.DictCursor)
                     c.execute("INSERT INTO sites VALUES ('" + postID + "', '" + session.get('username') + "');")
                     connection.commit()
                     os.remove("keys/" + str(postID) + '.key')   # Removes the key file
                     session['error'] = 3
+                    c.close()
+                    connection.close()
                     return(redirect('/manage'))   # Returns a page with the user's new page info
                 else:   # Returns an error to the user is the modification key used is invalid
                     return render_template("legacy.html", username=session.get('username'), error=2)
@@ -125,17 +141,30 @@ def loginget():
 def loginpost():
     username = request.form["username"]
     password = request.form["password"]
+    connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+    c = connection.cursor(pymysql.cursors.DictCursor)
     if c.execute("SELECT * FROM users WHERE username = '" + username + "'") == 1:   # Checks to see if the user exists
         c.execute("SELECT * FROM users WHERE username = '" + username + "' LIMIT 1;")
         userdata = c.fetchone()
         hashed = str(bcrypt.hashpw(str(password), str(userdata['salt'])))
         if str(hashed) != str(userdata['password']):   # Verifies the password
+            c.close()
+            connection.close()
             return(render_template("index.html", admin_email=admin_email, error=1))
         else:
             session.pop('username', None)   # Removes any session that exists
             session['username'] = userdata['username']   # Sets the session
+            c.close()
+            connection.close()
             return(redirect('/manage'))   # Sends the user to the management page
     else:
+        c.close()
+        connection.close()
         return(render_template("index.html", admin_email=admin_email, error=1))
 
 
@@ -168,37 +197,75 @@ def createpost():
     file = open('templates/userpages/' + str(newid) + '.html', 'w')   # Opens a new HTML file
     file.write(request.form["code"].encode('utf-8'))   # Writes code to HTML file
     file.close()   # Closes HTML file
+    connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+    c = connection.cursor(pymysql.cursors.DictCursor)
     c.execute("INSERT INTO sites VALUES ('" + str(newid) + "', '" + session.get('username') + "');")
     connection.commit()
+    c.close()
+    connection.close()
     return render_template('return.html', ID=newid, site_url=site_url, username = session.get('username'))   # Returns a page with the user's new page info
 
 
 @app.route("/edit/<postid>", methods = ["GET"])
 def editget(postid):   # Opens the edit page if the user is authroized to edit the requested page
+    connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+    c = connection.cursor(pymysql.cursors.DictCursor)
     try:
         if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + postid + "';")) == 1 or (session.get('username') in administrators):   # Checks to see if the user is authroized to edit the page or is an admin
             code = open('templates/userpages/' + str(postid) + '.html', 'r')
             return(render_template("edit.html", pageid = postid, code = (code.read()).decode('utf-8'), username = session.get('username')))
         else:
+            c.close()
+            connection.close()
             return("Access Denied!")
     except:
+        c.close()
+        connection.close()
         return(redirect("/login"))
 
 
 @app.route("/edit", methods = ["POST"])   # This page deals with updating the pages
 def editpost():
     pageid = request.form['pageid']
+    connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+    c = connection.cursor(pymysql.cursors.DictCursor)
     if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + pageid + "';")) == 1 or (session.get('username') in administrators):
         os.remove('templates/userpages/' + str(pageid) + '.html')   # Removes the old page
         file = open('templates/userpages/' + str(pageid) + '.html', 'w')   # Opens a new file for the page
         file.write(request.form["code"].encode('utf-8'))   # Writes the new code to the new key file
         file.close()   # Closes the key file
+        c.close()
+        connection.close()
         return render_template('return.html', ID=pageid, site_url=site_url, username = session.get('username'))   # Returns a page with the user's new page info
     else:
+        c.close()
+        connection.close()
         return("Access Denied!")
 
 @app.route("/manage", methods = ["GET"])   # Loads the admin page or management page based on user rights
 def manage():
+    connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+    c = connection.cursor(pymysql.cursors.DictCursor)
     error = session.get('error')
     session.pop('error', None)
     c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "';")
@@ -208,6 +275,8 @@ def manage():
     if session.get('username') in administrators:
         c.execute("SELECT id FROM sites LIMIT 1000;")   # Limited for now until we get a next page button
         record = [item['id'] for item in c.fetchall()]
+        c.close()
+        connection.close()
         return(render_template("admin.html", error=error, sites = record, my_sites = sites, username = session.get("username")))
     return(render_template("manager.html", error=error, sites = sites, username = session.get("username")))
 
@@ -227,13 +296,24 @@ def deletePageGet(ID):
 @app.route("/confirmeddelete/<ID>", methods = ["GET"])   # Deletes the page that is requested for deletion
 def deletePage(ID):
     if session.get('username') in active:
+        connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+        c = connection.cursor(pymysql.cursors.DictCursor)
         if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + ID + "';")) == 1 or session.get('username') in administrators:   # Checks to see if the user is authorized to delete the page
             c.execute("DELETE FROM sites WHERE id = '" + ID + "';")
             connection.commit()
             os.remove('templates/userpages/' + str(ID) + '.html')
             session['error'] = 1
+            c.close()
+            connection.close()
             return(redirect("/manage"))
         else:
+            c.close()
+            connection.close()
             return("Access Denied!")
     else:
         return(redirect("/login"))
@@ -257,11 +337,20 @@ def changepassPost():
         if password == '':
             return(render_template('changepassword.html', username=session.get('username'), error=2))
         else:
+            connection = pymysql.connect(host=sqlhost,
+                             user=sqluser,
+                             password=sqlpass,
+                             db=sqldb,
+                             charset=sqlcharset,
+                             cursorclass=pymysql.cursors.DictCursor)
+            c = connection.cursor(pymysql.cursors.DictCursor)
             salt = bcrypt.gensalt(14)
             hashedPassword = str(bcrypt.hashpw(str(password), str(salt)))
             c.execute("UPDATE users SET password = '" + hashedPassword + "', salt = '" + salt + "' WHERE username = '" + session.get('username') + "';")
             connection.commit()
             session['error'] = 2
+            c.close()
+            connection.close()
             return(redirect("/manage"))
     else:
         return(redirect("/login"))
