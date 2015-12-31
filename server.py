@@ -28,7 +28,7 @@ app = Flask(__name__)   # Defines Flask Application
 
 connection = pymysql.connect(host='localhost',
                              user='torpages',
-                             password='DBPASSWORD',
+                             password='udJGv4TfaAqMAyRJ',
                              db='torpages',
                              charset='utf8mb4',
                              cursorclass=pymysql.cursors.DictCursor)
