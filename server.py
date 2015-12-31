@@ -18,26 +18,29 @@ from flask import Flask   # Core web server
 from flask import request   # Used to process POST requests
 from flask import session   # Used to handle logins
 from flask import redirect   # Used to handle redirecting
-import random   # Used to generate random page IDs
 import os   # Used to check for/delete files
 import hashlib   # Used to hash the website modification keys
-import pickle
 import bcrypt   # Used to encrypt the user passwords
+import pymysql
+import uuid
 
 app = Flask(__name__)   # Defines Flask Application
 
+connection = pymysql.connect(host='localhost',
+                             user='torpages',
+                             password='DBPASSWORD',
+                             db='torpages',
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
 
-site_url = 'SITE_ADDRESS_GOES_HERE'
-admin_email = 'ADMIN_EMAIL_GOES_HERE'
+c = connection.cursor(pymysql.cursors.DictCursor)
+
+site_url = 'http://m54wkp5ctdpummms.onion'
+admin_email = 'abuse@cavefox.net'
 active = []   # Used to keep a list of logged in users
-record = {}   # Used to keep a list of pages, and their owners for the admins
-if os.path.isfile("pages.data"):   # checks to see if the file that stores the record dictionary exists
-    record = pickle.load(open("pages.data", "rb"))   # Loads the record dictionary
-else:
-    pickle.dump(record, open("pages.data", "wb"))   # Creates the record dictionary
 
 
-administrators = ['ADMIN_ACCOUNTS_GO_HERE']   # Define the administrator accounts
+administrators = ['admin']   # Define the administrator accounts
 
 
 @app.route("/", methods = ["GET"])
@@ -49,7 +52,7 @@ def getindex():   # This section returns the index page or the management page i
 
 @app.route("/register", methods = ["POST"])
 def registeradd():   # This section deals with registering new users
-    username = request.form["username"].lower()
+    username = request.form["username"]
     password = request.form["password"]
     password2 = request.form["confirm_password"]
     if (username.isalnum() is False or len(username) > 20):
@@ -59,15 +62,13 @@ def registeradd():   # This section deals with registering new users
     if password == '':
         return(render_template("register.html", error=4))
     else:
-        if os.path.isfile("userdata/" + username + ".password"):   # Checks to see of the username's password file exists
+        if c.execute("SELECT * FROM users WHERE username = '" + username + "'") == 1:   # Checks to see of the username exists
             return(render_template("register.html", error=3))
         else:
             salt = bcrypt.gensalt(14)   # Generates the password salt
             hashedPassword = str(bcrypt.hashpw(str(password), salt))   # Hashes the password
-            pickle.dump(salt, open("userdata/" + username + ".salt", "wb"))   # Saves the password salt
-            pickle.dump(hashedPassword, open("userdata/" + username + ".password", "wb"))   # Sves the hashed password
-            ownedSites = []
-            pickle.dump(ownedSites, open("userdata/" + username + ".sites", "wb"))   # Saves a blank list of owned sites
+            c.execute("INSERT INTO users VALUES ('" + str(username) + "', '" + hashedPassword + "', '" + salt + "');")
+            connection.commit()
             session['username'] = username   # Logs the user in
             return(redirect("/manage"))   # Redirects the user to the management page
 
@@ -100,11 +101,8 @@ def legacypost():   # This section deals with importing pages under the old syst
                 realkey = str(file.read())  # Reads the key file and sets it as variable realkey
                 file.close()   # Closes the keyfile
                 if str(realkey) == str(key) or str(postKey) == str(realkey):   # Checks for a valid modification key
-                    sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
-                    sites.append(str(postID))   # Adds the site to the user's owned sites list
-                    pickle.dump(sites, open("userdata/" + session.get('username') + ".sites", "wb"))   # Saves the user's sites list
-                    record.update({str(postID): session.get("username")})   # Updates the record dictionary
-                    pickle.dump(record, open("pages.data", "wb"))   # Saves the record dictionary
+                    c.execute("INSERT INTO sites VALUES ('" + postID + "', '" + session.get('username') + "');")
+                    connection.commit()
                     os.remove("keys/" + str(postID) + '.key')   # Removes the key file
                     session['error'] = 3
                     return(redirect('/manage'))   # Returns a page with the user's new page info
@@ -113,7 +111,7 @@ def legacypost():   # This section deals with importing pages under the old syst
             else:   # Returns an error if the page being modified never existed in the first place
                 return render_template("legacy.html", username=session.get('username'), error=1)
         else:
-            return(redirect("/login"))
+                return(redirect("/login"))
     except:
         return(redirect("/login"))
 
@@ -125,17 +123,17 @@ def loginget():
 
 @app.route("/login", methods = ["POST"])   # This section logs in the user
 def loginpost():
-    username = request.form["username"].lower()
+    username = request.form["username"]
     password = request.form["password"]
-    if os.path.isfile("userdata/" + username + ".password"):   # Checks to see if the user exists
-        salt = pickle.load(open("userdata/" + username + ".salt", "rb"))
-        passwordCheck = pickle.load(open("userdata/" + username + ".password", "rb"))   # Loads the stored password
-        hashed = str(bcrypt.hashpw(str(password), salt))
-        if str(hashed) != str(passwordCheck):   # Verifies the password
+    if c.execute("SELECT * FROM users WHERE username = '" + username + "'") == 1:   # Checks to see if the user exists
+        c.execute("SELECT * FROM users WHERE username = '" + username + "' LIMIT 1;")
+        userdata = c.fetchone()
+        hashed = str(bcrypt.hashpw(str(password), str(userdata['salt'])))
+        if str(hashed) != str(userdata['password']):   # Verifies the password
             return(render_template("index.html", admin_email=admin_email, error=1))
         else:
             session.pop('username', None)   # Removes any session that exists
-            session['username'] = username   # Sets the session
+            session['username'] = userdata['username']   # Sets the session
             return(redirect('/manage'))   # Sends the user to the management page
     else:
         return(render_template("index.html", admin_email=admin_email, error=1))
@@ -160,29 +158,25 @@ def createpost():
     customlink = str(request.form['customlink']).lower()   # Gets the custom page name (Optional when first posting a site)
     if os.path.isfile('templates/userpages/' + customlink + '.html') and customlink is not '':   # Checks to see if the custom link is taken if one is requested
         return render_template('new.html', code=request.form["code"], username=session.get('username'), error=2)
-    newid = random.randint(1, 99999999999999999999)   # Generates a new page ID
+    newid = uuid.uuid4()   # Generates a new page ID
     while os.path.isfile('templates/userpages/' + str(id) + '.html'):   # Checks to see if the ID is take and creates a new one if it is
-        newid = random.randint(1, 99999999999999999999)
+        newid = uuid.uuid4()
     if customlink is not '':    # Checks if the user set a custom post ID
-        if(customlink.isalnum() is False or len(customlink) > 20):   # Checks custom string for common invalid characters
+        if(customlink.isalnum() is False or len(customlink) > 50):   # Checks custom string for common invalid characters
             return(render_template('new.html', code=request.form["code"], username=session.get('username'), error=1))
         newid = customlink   # Redefines the ID to the custom one if a user chose one
     file = open('templates/userpages/' + str(newid) + '.html', 'w')   # Opens a new HTML file
     file.write(request.form["code"].encode('utf-8'))   # Writes code to HTML file
     file.close()   # Closes HTML file
-    sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))   # Loads a list of the user's sites
-    sites.append(str(newid))   # Adds the page to the user's list of pages
-    pickle.dump(sites, open("userdata/" + session.get('username') + ".sites", "wb"))   # Saves the sites list
-    record.update({str(newid): session.get("username")})   # Updates the master record of sites
-    pickle.dump(record, open("pages.data", "wb"))   # Saves the master record of sites
-    return render_template('return.html', ID=newid, site_url=site_url)   # Returns a page with the user's new page info
+    c.execute("INSERT INTO sites VALUES ('" + str(newid) + "', '" + session.get('username') + "');")
+    connection.commit()
+    return render_template('return.html', ID=newid, site_url=site_url, username = session.get('username'))   # Returns a page with the user's new page info
 
 
 @app.route("/edit/<postid>", methods = ["GET"])
 def editget(postid):   # Opens the edit page if the user is authroized to edit the requested page
     try:
-        sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
-        if ((str(postid) in sites) or (session.get('username') in administrators)):   # Checks to see if the user is authroized to edit the page or is an admin
+        if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + postid + "';")) == 1 or (session.get('username') in administrators):   # Checks to see if the user is authroized to edit the page or is an admin
             code = open('templates/userpages/' + str(postid) + '.html', 'r')
             return(render_template("edit.html", pageid = postid, code = (code.read()).decode('utf-8'), username = session.get('username')))
         else:
@@ -193,30 +187,29 @@ def editget(postid):   # Opens the edit page if the user is authroized to edit t
 
 @app.route("/edit", methods = ["POST"])   # This page deals with updating the pages
 def editpost():
-    sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
     pageid = request.form['pageid']
-    if ((pageid in sites) or (session.get('username') in administrators)):
+    if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + pageid + "';")) == 1 or (session.get('username') in administrators):
         os.remove('templates/userpages/' + str(pageid) + '.html')   # Removes the old page
         file = open('templates/userpages/' + str(pageid) + '.html', 'w')   # Opens a new file for the page
         file.write(request.form["code"].encode('utf-8'))   # Writes the new code to the new key file
         file.close()   # Closes the key file
-        return render_template('return.html', ID=pageid, site_url=site_url)   # Returns a page with the user's new page info
+        return render_template('return.html', ID=pageid, site_url=site_url, username = session.get('username'))   # Returns a page with the user's new page info
     else:
         return("Access Denied!")
 
 @app.route("/manage", methods = ["GET"])   # Loads the admin page or management page based on user rights
 def manage():
-    try:
-        error = session.get('error')
-        session.pop('error', None)
-        sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
-        if session.get('username') not in active:
-            active.append(session.get('username'))
-        if session.get('username') in administrators:
-            return(render_template("admin.html", error=error, sites = record, my_sites = sites, username = session.get("username")))
-        return(render_template("manager.html", error=error, sites = sites, username = session.get("username")))
-    except:
-        return(redirect("/login"))
+    error = session.get('error')
+    session.pop('error', None)
+    c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "';")
+    sites = [item['id'] for item in c.fetchall()]
+    if session.get('username') not in active:
+        active.append(session.get('username'))
+    if session.get('username') in administrators:
+        c.execute("SELECT id FROM sites LIMIT 1000;")   # Limited for now until we get a next page button
+        record = [item['id'] for item in c.fetchall()]
+        return(render_template("admin.html", error=error, sites = record, my_sites = sites, username = session.get("username")))
+    return(render_template("manager.html", error=error, sites = sites, username = session.get("username")))
 
 
 @app.route('/p/<ID>', methods=['GET'])    # This section deals with GET requests for user pages
@@ -234,22 +227,10 @@ def deletePageGet(ID):
 @app.route("/confirmeddelete/<ID>", methods = ["GET"])   # Deletes the page that is requested for deletion
 def deletePage(ID):
     if session.get('username') in active:
-        sites = pickle.load(open("userdata/" + str(session.get("username")) + ".sites", "rb"))
-        if str(ID) in sites:   # Checks to see if the user is authorized to delete the page
-            sites.remove(str(ID))
+        if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + ID + "';")) == 1 or session.get('username') in administrators:   # Checks to see if the user is authorized to delete the page
+            c.execute("DELETE FROM sites WHERE id = '" + ID + "';")
+            connection.commit()
             os.remove('templates/userpages/' + str(ID) + '.html')
-            pickle.dump(sites, open("userdata/" + session.get('username') + ".sites", "wb"))
-            del record[str(ID)]
-            pickle.dump(record, open("pages.data", "wb"))
-            session['error'] = 1
-            return(redirect("/manage"))
-        elif session.get('username') in administrators:
-            sites = pickle.load(open("userdata/" + record[str(ID)] + ".sites", "rb"))
-            sites.remove(str(ID))
-            os.remove('templates/userpages/' + str(ID) + '.html')
-            pickle.dump(sites, open("userdata/" + record[str(ID)] + ".sites", "wb"))
-            del record[str(ID)]
-            pickle.dump(record, open("pages.data", "wb"))
             session['error'] = 1
             return(redirect("/manage"))
         else:
@@ -277,9 +258,9 @@ def changepassPost():
             return(render_template('changepassword.html', username=session.get('username'), error=2))
         else:
             salt = bcrypt.gensalt(14)
-            hashedPassword = str(bcrypt.hashpw(str(password), salt))
-            pickle.dump(salt, open("userdata/" + session.get('username') + ".salt", "wb"))
-            pickle.dump(hashedPassword, open("userdata/" + session.get('username') + ".password", "wb"))
+            hashedPassword = str(bcrypt.hashpw(str(password), str(salt)))
+            c.execute("UPDATE users SET password = '" + hashedPassword + "', salt = '" + salt + "' WHERE username = '" + session.get('username') + "';")
+            connection.commit()
             session['error'] = 2
             return(redirect("/manage"))
     else:
