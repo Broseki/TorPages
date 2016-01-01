@@ -14,7 +14,7 @@ Check out our GitHub repository and consider contributing [https://github.com/mc
 '''
 
 from flask import render_template   # Used to render HTML pages
-from flask import Flask   # Core web server
+from flask import Flask
 from flask import request   # Used to process POST requests
 from flask import session   # Used to handle logins
 from flask import redirect   # Used to handle redirecting
@@ -23,11 +23,14 @@ import hashlib   # Used to hash the website modification keys
 import bcrypt   # Used to encrypt the user passwords
 import pymysql
 import uuid
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
 
 app = Flask(__name__)   # Defines Flask Application
 sqlhost = '127.0.0.1'
 sqluser = 'torpages'
-sqlpass = 'SQLPASSWORD'
+sqlpass = ''
 sqldb = 'torpages'
 sqlcharset = 'utf8mb4'
 
@@ -36,7 +39,7 @@ admin_email = 'abuse@cavefox.net'
 active = []   # Used to keep a list of logged in users
 
 
-administrators = ['admin']   # Define the administrator accounts
+administrators = ['mcanning']   # Define the administrator accounts
 
 
 @app.route("/", methods = ["GET"])
@@ -170,9 +173,12 @@ def loginpost():
 
 @app.route("/logout", methods = ["GET"])   # Logs out the user
 def logout():
-    active.remove(session.get('username'))   # Removes the user from the active users list
-    session.pop('username', None)   # Closes the user's session
-    return(render_template('index.html', error=2, admin_email=admin_email))
+    try:
+        active.remove(session.get('username'))   # Removes the user from the active users list
+        session.pop('username', None)   # Closes the user's session
+        return(render_template('index.html', error=2, admin_email=admin_email))
+    except:
+        return(redirect('/'))
 
 
 @app.route("/create", methods = ["GET"])   # Returns the create a news page page
@@ -357,8 +363,12 @@ def changepassPost():
 
 
 app.secret_key = os.urandom(4096)   # Generates a random key for the session cookies
+
 while True:
     try:
-        app.run(debug=False)   # Starts the Flask server with debugging set to False
+        if __name__ == "__main__":
+            http_server = HTTPServer(WSGIContainer(app))
+            http_server.listen(5000)
+            IOLoop.instance().start()
     except:
-        print("Error!")
+        pass
