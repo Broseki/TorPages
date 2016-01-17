@@ -8,3 +8,5 @@ The goal of this project is to allow those that would normally be threatened if 
 This project is supported by CaveFox Telecommunications and is licensed under Kopimi (public domain).
 
 You can see this project in action on the deep web  here --> http://m54wkp5ctdpummms.onion/
+
+CKEditor is used in this project - This was not created by contributors of this project - See http://ckeditor.com for that project.
