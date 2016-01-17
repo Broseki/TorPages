@@ -2,13 +2,13 @@
 TorPages
 ---
 This server software is used to allow individuals to publish static HTML/Text content to the DeepWeb without
-cost, and without registration.
+cost.
 
 This software is licensed under the Kopimi concept, meaning this software is essentially public domain,
 but it would be nice to refer to CaveFox Telecom and Michael Canning as it is always nice to receive credit
 for work.
 
-For more information contact Michael Canning - mcanning(at)tutanota(dot)com
+For more information contact Michael Canning - mcanning(at)cavefox(dot)net
 
 Check out our GitHub repository and consider contributing [https://github.com/mcanningjr/TorPages]
 '''
@@ -255,7 +255,7 @@ def editpost():
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
     c = connection.cursor(pymysql.cursors.DictCursor)
-    if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + pageid + "';")) == 1 or (session.get('username') in administrators) and verkey == key:
+    if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + pageid + "';") == 1 or (session.get('username') in administrators)) and str(verkey) == str(key):
         os.remove('templates/userpages/' + str(pageid) + '.html')   # Removes the old page
         file = open('templates/userpages/' + str(pageid) + '.html', 'w')   # Opens a new file for the page
         file.write(request.form["code"].encode('utf-8'))   # Writes the new code to the new key file
