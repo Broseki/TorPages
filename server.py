@@ -218,7 +218,7 @@ def createpost():
 
 
 @app.route("/edit/<postid>", methods = ["GET"])
-def editget(postid):   # Opens the edit page if the user is authroized to edit the requested page
+def editget(postid):   # Opens the edit page if the user is authorized to edit the requested page
     connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
@@ -229,7 +229,9 @@ def editget(postid):   # Opens the edit page if the user is authroized to edit t
     try:
         if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + postid + "';")) == 1 or (session.get('username') in administrators):   # Checks to see if the user is authroized to edit the page or is an admin
             code = open('templates/userpages/' + str(postid) + '.html', 'r')
-            return(render_template("edit.html", pageid = postid, code = (code.read()).decode('utf-8'), username = session.get('username')))
+            otk = hash(os.urandom(4096))
+            session['key'] = otk
+            return(render_template("edit.html", pageid = postid, key=otk, code = (code.read()).decode('utf-8'), username = session.get('username')))
         else:
             c.close()
             connection.close()
@@ -243,6 +245,9 @@ def editget(postid):   # Opens the edit page if the user is authroized to edit t
 @app.route("/edit", methods = ["POST"])   # This page deals with updating the pages
 def editpost():
     pageid = request.form['pageid']
+    key = request.form['key']
+    verkey = session.get('key')
+    session.pop('key', None)
     connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
@@ -250,7 +255,7 @@ def editpost():
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
     c = connection.cursor(pymysql.cursors.DictCursor)
-    if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + pageid + "';")) == 1 or (session.get('username') in administrators):
+    if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + pageid + "';")) == 1 or (session.get('username') in administrators) and verkey == key:
         os.remove('templates/userpages/' + str(pageid) + '.html')   # Removes the old page
         file = open('templates/userpages/' + str(pageid) + '.html', 'w')   # Opens a new file for the page
         file.write(request.form["code"].encode('utf-8'))   # Writes the new code to the new key file
@@ -296,12 +301,18 @@ def getPage(ID):
 
 @app.route("/delete/<ID>", methods = ["GET"])
 def deletePageGet(ID):
-    return(render_template("confirmdelete.html", x = ID, username = session.get('username')))
+    otk = hash(os.urandom(4096))
+    session['key'] = otk
+    return(render_template("confirmdelete.html", key=otk, x = ID, username = session.get('username')))
 
 
-@app.route("/confirmeddelete/<ID>", methods = ["GET"])   # Deletes the page that is requested for deletion
-def deletePage(ID):
-    if session.get('username') in active:
+@app.route("/delete", methods = ["POST"])   # Deletes the page that is requested for deletion
+def deletePage():
+    key = request.form['key']
+    ID = request.form['site']
+    verkey = session.get('key')
+    session.pop('key', None)
+    if session.get('username') in active and str(key) == str(verkey):
         connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
@@ -336,20 +347,32 @@ def changepassGet():
 @app.route("/changepass", methods = ["POST"])   # Works similar to the registration page, but only needs the password
 def changepassPost():
     if session.get('username') in active:
-        password = request.form["password"]
-        password2 = request.form["confirm_password"]
-        if password != password2:
-            return(render_template('changepassword.html', username=session.get('username'), error=1))
-        if password == '':
-            return(render_template('changepassword.html', username=session.get('username'), error=2))
-        else:
-            connection = pymysql.connect(host=sqlhost,
+        connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
                              db=sqldb,
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
-            c = connection.cursor(pymysql.cursors.DictCursor)
+        c = connection.cursor(pymysql.cursors.DictCursor)
+        password = request.form["password"]
+        password2 = request.form["confirm_password"]
+        currentpassword = request.form['current_password']
+        c.execute("SELECT * FROM users WHERE username = '" + session.get('username') + "' LIMIT 1;")
+        userdata = c.fetchone()
+        hashed = str(bcrypt.hashpw(str(currentpassword), str(userdata['salt'])))
+        if str(hashed) != str(userdata['password']):   # Verifies the password
+            c.close()
+            connection.close()
+            return(render_template('changepassword.html', username=session.get('username'), error=3))
+        if password != password2:
+            c.close()
+            connection.close()
+            return(render_template('changepassword.html', username=session.get('username'), error=1))
+        if password == '':
+            c.close()
+            connection.close()
+            return(render_template('changepassword.html', username=session.get('username'), error=2))
+        else:
             salt = bcrypt.gensalt(14)
             hashedPassword = str(bcrypt.hashpw(str(password), str(salt)))
             c.execute("UPDATE users SET password = '" + hashedPassword + "', salt = '" + salt + "' WHERE username = '" + session.get('username') + "';")
