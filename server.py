@@ -39,7 +39,7 @@ admin_email = 'abuse@cavefox.net'
 active = []   # Used to keep a list of logged in users
 
 
-administrators = ['mcanning']   # Define the administrator accounts
+administrators = ['admin']   # Define the administrator accounts
 
 
 @app.route("/", methods = ["GET"])
@@ -68,14 +68,14 @@ def registeradd():   # This section deals with registering new users
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
         c = connection.cursor(pymysql.cursors.DictCursor)
-        if c.execute("SELECT * FROM users WHERE username = '" + username + "'") == 1:   # Checks to see of the username exists
+        if c.execute("SELECT * FROM users WHERE username=%s", username) == 1:   # Checks to see of the username exists
             connection.close()
             c.close()
             return(render_template("register.html", error=3))
         else:
             salt = bcrypt.gensalt(14)   # Generates the password salt
             hashedPassword = str(bcrypt.hashpw(str(password), salt))   # Hashes the password
-            c.execute("INSERT INTO users VALUES ('" + str(username) + "', '" + hashedPassword + "', '" + salt + "');")
+            c.execute("INSERT INTO users VALUES (%s, %s, %s);", (username, hashedPassword, salt))
             connection.commit()
             session['username'] = username   # Logs the user in
             c.close()
@@ -118,7 +118,7 @@ def legacypost():   # This section deals with importing pages under the old syst
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
                     c = connection.cursor(pymysql.cursors.DictCursor)
-                    c.execute("INSERT INTO sites VALUES ('" + postID + "', '" + session.get('username') + "');")
+                    c.execute("INSERT INTO sites VALUES (%s, %s);", (postID, session.get("username")))
                     connection.commit()
                     os.remove("keys/" + str(postID) + '.key')   # Removes the key file
                     session['error'] = 3
@@ -151,8 +151,8 @@ def loginpost():
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
     c = connection.cursor(pymysql.cursors.DictCursor)
-    if c.execute("SELECT * FROM users WHERE username = '" + username + "'") == 1:   # Checks to see if the user exists
-        c.execute("SELECT * FROM users WHERE username = '" + username + "' LIMIT 1;")
+    if c.execute("SELECT * FROM users WHERE username = %s", (username)) == 1:   # Checks to see if the user exists
+        c.execute("SELECT * FROM users WHERE username = %s LIMIT 1;", (username))
         userdata = c.fetchone()
         hashed = str(bcrypt.hashpw(str(password), str(userdata['salt'])))
         if str(hashed) != str(userdata['password']):   # Verifies the password
@@ -210,7 +210,7 @@ def createpost():
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
     c = connection.cursor(pymysql.cursors.DictCursor)
-    c.execute("INSERT INTO sites VALUES ('" + str(newid) + "', '" + session.get('username') + "');")
+    c.execute("INSERT INTO sites VALUES (%s, %s);", (str(newid), session.get('username')))
     connection.commit()
     c.close()
     connection.close()
@@ -227,7 +227,7 @@ def editget(postid):   # Opens the edit page if the user is authorized to edit t
                              cursorclass=pymysql.cursors.DictCursor)
     c = connection.cursor(pymysql.cursors.DictCursor)
     try:
-        if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + postid + "';")) == 1 or (session.get('username') in administrators):   # Checks to see if the user is authroized to edit the page or is an admin
+        if (c.execute("SELECT id FROM sites WHERE owner = %s AND id = %s;", (session.get('username'), str(postid)))) == 1 or (session.get('username') in administrators):   # Checks to see if the user is authroized to edit the page or is an admin
             code = open('templates/userpages/' + str(postid) + '.html', 'r')
             otk = hash(os.urandom(4096))
             session['key'] = otk
@@ -255,7 +255,7 @@ def editpost():
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
     c = connection.cursor(pymysql.cursors.DictCursor)
-    if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + pageid + "';") == 1 or (session.get('username') in administrators)) and str(verkey) == str(key):
+    if (c.execute("SELECT id FROM sites WHERE owner = %s AND id = %s;", (session.get('username'), pageid)) == 1 or (session.get('username') in administrators)) and str(verkey) == str(key):
         os.remove('templates/userpages/' + str(pageid) + '.html')   # Removes the old page
         file = open('templates/userpages/' + str(pageid) + '.html', 'w')   # Opens a new file for the page
         file.write(request.form["code"].encode('utf-8'))   # Writes the new code to the new key file
@@ -279,7 +279,7 @@ def manage():
     c = connection.cursor(pymysql.cursors.DictCursor)
     error = session.get('error')
     session.pop('error', None)
-    c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "';")
+    c.execute("SELECT id FROM sites WHERE owner = %s;", (session.get('username')))
     sites = [item['id'] for item in c.fetchall()]
     if session.get('username') not in active:
         active.append(session.get('username'))
@@ -320,8 +320,8 @@ def deletePage():
                              charset=sqlcharset,
                              cursorclass=pymysql.cursors.DictCursor)
         c = connection.cursor(pymysql.cursors.DictCursor)
-        if (c.execute("SELECT id FROM sites WHERE owner = '" + session.get('username') + "' AND id = '" + ID + "';")) == 1 or session.get('username') in administrators:   # Checks to see if the user is authorized to delete the page
-            c.execute("DELETE FROM sites WHERE id = '" + ID + "';")
+        if (c.execute("SELECT id FROM sites WHERE owner = %s AND id = %s;", (session.get('username'), ID))) == 1 or session.get('username') in administrators:   # Checks to see if the user is authorized to delete the page
+            c.execute("DELETE FROM sites WHERE id = %s;", (ID))
             connection.commit()
             os.remove('templates/userpages/' + str(ID) + '.html')
             session['error'] = 1
@@ -357,7 +357,7 @@ def changepassPost():
         password = request.form["password"]
         password2 = request.form["confirm_password"]
         currentpassword = request.form['current_password']
-        c.execute("SELECT * FROM users WHERE username = '" + session.get('username') + "' LIMIT 1;")
+        c.execute("SELECT * FROM users WHERE username = %s LIMIT 1;", (session.get('username')))
         userdata = c.fetchone()
         hashed = str(bcrypt.hashpw(str(currentpassword), str(userdata['salt'])))
         if str(hashed) != str(userdata['password']):   # Verifies the password
@@ -375,7 +375,7 @@ def changepassPost():
         else:
             salt = bcrypt.gensalt(14)
             hashedPassword = str(bcrypt.hashpw(str(password), str(salt)))
-            c.execute("UPDATE users SET password = '" + hashedPassword + "', salt = '" + salt + "' WHERE username = '" + session.get('username') + "';")
+            c.execute("UPDATE users SET password = %s, salt = %s WHERE username = %s;", (hashedPassword, salt, session.get('username')))
             connection.commit()
             session['error'] = 2
             c.close()
