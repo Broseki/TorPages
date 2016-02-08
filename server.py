@@ -445,6 +445,7 @@ def manage():
     files = getfiles(session.get('username'))
     if session.get('username') not in active:
         active.append(session.get('username'))
+    if session.get('username') in administrators:
         return(render_template("admin.html", error=error, subdirs= subdirs, dirs = directories, files = files, sites = sites, username = session.get("username")))
     return(render_template("manager.html", error=error, subdirs= subdirs, dirs = directories, files = files, sites = sites, username = session.get("username")))
 
