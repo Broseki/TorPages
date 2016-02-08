@@ -7,7 +7,7 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
 
-    <title>TorPages | Post Successful</title>
+    <title>TorPages | Upload a File</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -63,11 +63,28 @@
 
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
-          <h2><b>Post Successful!</b></h2>
-          <HR>
-          <p>Post ID: {{ ID }}</p>
-          <p>Link: <a href="{{ subdir }}{{ ID }}">{{ site_url }}{{ subdir }}{{ ID }}</a></p>
-          <p><a href="/manage"><button type="button" class="btn btn-success">Okay</button></a></p>
+          {% if error == 1 %}
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                Uploaded files must be under 30 MB!
+            </div>
+          {% elif error == 2 %}
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                The file type is not allowed!
+            </div>
+          {% endif %}
+        <h2><b>Upload a File</b></h2>
+        <HR>
+        <form method="post" action="/upload" enctype=multipart/form-data>
+            <input type="hidden" name="key" value="{{ key }}">
+            <input type="file" name="datafile">
+            <br>
+            <button type="submit" class="btn btn-success">Upload</button>
+        </form>
+        <p></p>
       </div>
 
     </div> <!-- /container -->

@@ -7,7 +7,7 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
 
-    <title>TorPages | Post Successful</title>
+    <title>TorPages | Edit a Page</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -63,11 +63,18 @@
 
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
-          <h2><b>Post Successful!</b></h2>
-          <HR>
-          <p>Post ID: {{ ID }}</p>
-          <p>Link: <a href="{{ subdir }}{{ ID }}">{{ site_url }}{{ subdir }}{{ ID }}</a></p>
-          <p><a href="/manage"><button type="button" class="btn btn-success">Okay</button></a></p>
+        <h2><b>Edit a Page</b></h2>
+        <HR>
+        <script src="/static/ckeditor/ckeditor.js" type="text/javascript"></script>
+        <form method="post" action="/sites/edit">
+            <input type="hidden" name="pageid" value="{{ pageid }}">
+            <input type="hidden" name="key" value="{{ key }}">
+          <input type="hidden" name="site" value="{{ site }}">
+            <textarea class="ckeditor" name="code">{{ code }}</textarea><br>
+            <br>
+            <button type="submit" class="btn btn-success">Publish</button>
+        </form>
+        <p></p>
       </div>
 
     </div> <!-- /container -->

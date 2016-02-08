@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
-
-    <title>TorPages | Post Successful</title>
+    <title>TorPages | New Page</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -45,7 +44,7 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/manage">TorPages | Management Console</a>
+            <a class="navbar-brand" href="/manage">TorPages | Administration Console</a>
           </div>
           <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
@@ -63,13 +62,31 @@
 
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
-          <h2><b>Post Successful!</b></h2>
+        <h2><b>TorPages | Administration Console</b></h2>
+        <HR>
+        {% if error == 1 %}
+            <div class="alert alert-success fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                &nbsp;Action performed successfully!
+            </div>
+          {% endif %}
+        <h2><b>Remove an Item</b></h2>
           <HR>
-          <p>Post ID: {{ ID }}</p>
-          <p>Link: <a href="{{ subdir }}{{ ID }}">{{ site_url }}{{ subdir }}{{ ID }}</a></p>
-          <p><a href="/manage"><button type="button" class="btn btn-success">Okay</button></a></p>
-      </div>
-
+        <form method="post" action="/console">
+            Item Type:
+            <input type="radio" name="type" value="site"> Site&nbsp;
+            <input type="radio" name="type" value="sitepage"> Site Page&nbsp;
+            <input type="radio" name="type" value="generalpage"> General Page&nbsp;
+            <input type="radio" name="type" value="file"> File
+            <br><br>
+          Site:
+          <input type="text" name="site"><br><br>
+          Item:
+          <input type="text" name="item"><br><br>
+		  <button type="submit" class="btn btn-success">Execute</button>
+	</form>
+          </div>
     </div> <!-- /container -->
 
 

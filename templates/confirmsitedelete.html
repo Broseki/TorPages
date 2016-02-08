@@ -7,7 +7,7 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 
 
-    <title>TorPages | Post Successful</title>
+    <title>TorPages | Confirm Deletion</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -63,11 +63,15 @@
 
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
-          <h2><b>Post Successful!</b></h2>
+          <h2><b>Confirm Site Deletion</b></h2>
           <HR>
-          <p>Post ID: {{ ID }}</p>
-          <p>Link: <a href="{{ subdir }}{{ ID }}">{{ site_url }}{{ subdir }}{{ ID }}</a></p>
-          <p><a href="/manage"><button type="button" class="btn btn-success">Okay</button></a></p>
+          <h3>Site to Delete: &nbsp;{{ site }}</h3><br>
+          <form method="post" action="/sites/deletesite">
+            <input type="hidden" name="site" value="{{ site }}">
+            <input type="hidden" name="key" value="{{ key }}">
+		    <a href="/manage"><button type="button" class="btn btn-info">Cancel</button>   </a><button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        <p></p>
       </div>
 
     </div> <!-- /container -->

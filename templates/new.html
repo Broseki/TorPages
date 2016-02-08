@@ -79,10 +79,16 @@
           {% endif %}
         <script src="/static/ckeditor/ckeditor.js" type="text/javascript"></script>
     <form method="post" action="">
-        <h3>Custom Post Link: {{ site_url }}/p/
+        <h3>Custom Post Link: {{ site_url }} <select name="subdir">
+            <option value="p">/p/</option>
+            {% for x in sites %}
+             <option value="{{ x }}">/s/{{ x }}/</option>
+            {% endfor %}
+        </select>
 		<input type="text" name="customlink"><br></h3>
         <textarea class="ckeditor" name="code">{{ code }}</textarea>
         <br>
+        <input type="hidden" name="key" value="{{ key }}">
 		<button type="submit" class="btn btn-success">Publish</button>
     </form>
         <p></p>
