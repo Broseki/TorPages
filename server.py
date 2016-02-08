@@ -394,7 +394,7 @@ def editpost():
         file.close()   # Closes the key file
         c.close()
         connection.close()
-        return render_template('return.html', ID=pageid, site_url=site_url, username = session.get('username'))   # Returns a page with the user's new page info
+        return render_template('return.html', ID='/p/' + pageid, site_url=site_url, username = session.get('username'))   # Returns a page with the user's new page info
     else:
         c.close()
         connection.close()
@@ -688,11 +688,6 @@ def fileeditpost():
                              cursorclass=pymysql.cursors.DictCursor)
     c = connection.cursor(pymysql.cursors.DictCursor)
     if (session.get('username') in active and str(verkey) == str(key)) and (c.execute("SELECT filename FROM files WHERE owner = %s AND filename = %s;", (session.get('username'), filename))):
-        extension = filename.rsplit('.', 1)[1]
-        if extension is 'php':
-            otk = hash(os.urandom(4096))
-            session['key'] = otk
-            return(render_template("upload.html", key=otk, username = session.get('username'), error = 2))
         os.remove('static/f/' + str(filename))
         file.save(os.path.join('static/f/', filename))
         c.execute("UPDATE files SET realname=%s WHERE filename=%s AND owner=%s LIMIT 1;", (str(file.filename), str(filename), session.get('username')))
@@ -729,7 +724,7 @@ def uploadpost():
         uuidx = uuid.uuid4()
         filename = file.filename
         extension = filename.rsplit('.', 1)[1]
-        if extension is 'php':
+        if extension is '.php':
             otk = hash(os.urandom(4096))
             session['key'] = otk
             return(render_template("upload.html", key=otk, username = session.get('username'), error = 2))
