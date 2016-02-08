@@ -164,6 +164,7 @@ def loginpost():
         else:
             session.pop('username', None)   # Removes any session that exists
             session['username'] = userdata['username']   # Sets the session
+            session['key'] = hash(os.urandom(4096))
             c.close()
             connection.close()
             return(redirect('/manage'))   # Sends the user to the management page
@@ -178,6 +179,7 @@ def logout():
     try:
         active.remove(session.get('username'))   # Removes the user from the active users list
         session.pop('username', None)   # Closes the user's session
+        session.pop('key', None)
         return(render_template('index.html', error=2, admin_email=admin_email))
     except:
         return(redirect('/'))
@@ -198,9 +200,7 @@ def createget():
     sites = [item['name'] for item in c.fetchall()]
     c.close()
     connection.close()
-    otk = hash(os.urandom(4096))
-    session['key'] = otk
-    return(render_template("new.html", key=otk, sites = sites, site_url = site_url, username = session.get('username')))
+    return(render_template("new.html", key=session.get('key'), sites = sites, site_url = site_url, username = session.get('username')))
 
 
 @app.route("/console", methods = ["GET"])   # Returns the create a news page page
@@ -217,8 +217,7 @@ def consolepost():
     site = request.form['site']
     item = request.form['item']
     type = request.form['type']
-    otk = hash(os.urandom(4096))
-    session['key'] = otk
+    otk = session.get('key')
     if str(type) == "site":
         return(render_template("confirmsitedelete.html", key=otk, site = site, username = session.get('username')))
     if str(type) == "file":
@@ -238,7 +237,6 @@ def createpost():
     customlink = str(request.form['customlink']).lower()   # Gets the custom page name (Optional when first posting a site)
     verkey = session.get('key')
     key = request.form['key']
-    session.pop('key', None)
     if not str(key) == str(verkey):
         return('Access Denied!')
     if subdir == 'p':
@@ -306,8 +304,7 @@ def editget(postid):   # Opens the edit page if the user is authorized to edit t
     try:
         if (c.execute("SELECT id FROM sites WHERE owner = %s AND id = %s;", (session.get('username'), str(postid)))) == 1:   # Checks to see if the user is authroized to edit the page or is an admin
             code = open('templates/userpages/' + str(postid) + '.html', 'r')
-            otk = hash(os.urandom(4096))
-            session['key'] = otk
+            otk = session['key']
             return(render_template("edit.html", pageid = postid, key=otk, code = (code.read()).decode('utf-8'), username = session.get('username')))
         else:
             c.close()
@@ -331,8 +328,7 @@ def editsitepageget(site, postid):   # Opens the edit page if the user is author
     try:
         if (c.execute("SELECT name FROM subdirs WHERE owner = %s AND name = %s;", (session.get('username'), str(site)))) == 1 and os.path.isfile('templates/dirs/' + str(site).lower() + '/' + str(postid).lower() + '.html'):   # Checks to see if the user is authroized to edit the page or is an admin
             code = open('templates/dirs/' + str(site).lower() + '/' + str(postid).lower() + '.html', 'r')
-            otk = hash(os.urandom(4096))
-            session['key'] = otk
+            otk = session['key']
             c.close()
             connection.close()
             return(render_template("editsitepage.html", site=site, pageid = postid, key=otk, code = (code.read()).decode('utf-8'), username = session.get('username')))
@@ -352,7 +348,6 @@ def editsitepagepost():
     key = request.form['key']
     site = request.form['site']
     verkey = session.get('key')
-    session.pop('key', None)
     connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
@@ -379,7 +374,6 @@ def editpost():
     pageid = request.form['pageid']
     key = request.form['key']
     verkey = session.get('key')
-    session.pop('key', None)
     connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
@@ -476,15 +470,13 @@ def getSitePage(ID, page):
 
 @app.route("/delete/<ID>", methods = ["GET"])
 def deletePageGet(ID):
-    otk = hash(os.urandom(4096))
-    session['key'] = otk
+    otk = session['key']
     return(render_template("confirmdelete.html", key=otk, x = ID, username = session.get('username')))
 
 
 @app.route("/sites/deletefile/<ID>/<page>", methods = ["GET"])
 def deleteSitePageGet(ID, page):
-    otk = hash(os.urandom(4096))
-    session['key'] = otk
+    otk = session['key']
     return(render_template("confirmsitepagedelete.html", key=otk, site = ID, page=page, username = session.get('username')))
 
 
@@ -520,8 +512,7 @@ def deletePagePost():
 @app.route("/createsite", methods = ["GET"])
 def createSiteGet():
     if session.get('username'):
-        otk = hash(os.urandom(4096))
-        session['key'] = otk
+        otk = session['key']
         return(render_template("create_site.html", key=otk, site_url=site_url, username = session.get('username')))
     else:
         return(redirect('/login'))
@@ -559,18 +550,16 @@ def deleteSitePost():
 
 @app.route("/sites/deletesite/<ID>", methods = ["GET"])
 def deleteSiteGet(ID):
-    otk = hash(os.urandom(4096))
-    session['key'] = otk
+    otk = session['key']
     return(render_template("confirmsitedelete.html", key=otk, site = ID, username = session.get('username')))
 
 
-@app.route("/createsite", methods = ["POST"])   # Deletes the page that is requested for deletion
+@app.route("/createsite", methods = ["POST"])
 def createSitePost():
     if not session.get('username'):
         return(redirect('/'))
     key = request.form['key']
     verkey = session.get('key')
-    session.pop('key', None)
     if session.get('username') in active and str(key) == str(verkey):
         connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
@@ -580,6 +569,9 @@ def createSitePost():
                              cursorclass=pymysql.cursors.DictCursor)
         c = connection.cursor(pymysql.cursors.DictCursor)
         subdir = request.form['subdir']
+        if not subdir.isalnum() or len(subdir) > 50:
+            session['error'] = 8
+            return(redirect("/manage"))
         if not os.path.exists('templates/dirs/' + subdir):   # Checks to see if the user is authorized to delete the page
             c.execute("INSERT INTO subdirs VALUES (%s, %s);", (str(subdir), session.get('username')))
             connection.commit()
@@ -592,8 +584,7 @@ def createSitePost():
         else:
             c.close()
             connection.close()
-            otk = hash(os.urandom(4096))
-            session['key'] = otk
+            otk = session['key']
             return(render_template("create_site.html", key=otk, username = session.get('username'), error = 1))
     else:
         return(redirect("/login"))
@@ -603,8 +594,7 @@ def createSitePost():
 def deleteFileGet(ID):
     if not session.get('username'):
         return(redirect('/'))
-    otk = hash(os.urandom(4096))
-    session['key'] = otk
+    otk = session['key']
     connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
@@ -625,7 +615,6 @@ def deleteFile():
     key = request.form['key']
     filename = request.form['file']
     verkey = session.get('key')
-    session.pop('key', None)
     if session.get('username') in active and str(key) == str(verkey):
         connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
@@ -654,8 +643,7 @@ def deleteFile():
 def uploadget():
     if not session.get('username'):
         return(redirect('/'))
-    otk = hash(os.urandom(4096))
-    session['key'] = otk
+    otk = session['key']
     return(render_template("upload.html", key=otk, username = session.get('username')))
 
 
@@ -663,8 +651,7 @@ def uploadget():
 def editfileget(filename):
     if not session.get('username'):
         return(redirect('/'))
-    otk = hash(os.urandom(4096))
-    session['key'] = otk
+    otk = session['key']
     return(render_template("editfile.html", filename = filename, key=otk, username = session.get('username')))
 
 
@@ -675,12 +662,10 @@ def fileeditpost():
     file = request.files['datafile']
     filename = request.form['filename']
     if file.content_length > 31457280:
-        otk = hash(os.urandom(4096))
-        session['key'] = otk
+        otk = session['key']
         return(render_template("upload.html", key=otk, username = session.get('username'), error = 1))
     key = request.form['key']
     verkey = session.get('key')
-    session.pop('key', None)
     connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
@@ -708,12 +693,10 @@ def uploadpost():
         return(redirect('/'))
     file = request.files['datafile']
     if file.content_length > 31457280:
-        otk = hash(os.urandom(4096))
-        session['key'] = otk
+        otk = session['key']
         return(render_template("upload.html", key=otk, username = session.get('username'), error = 1))
     key = request.form['key']
     verkey = session.get('key')
-    session.pop('key', None)
     connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
                              password=sqlpass,
@@ -753,7 +736,6 @@ def deletePage():
     key = request.form['key']
     ID = request.form['site']
     verkey = session.get('key')
-    session.pop('key', None)
     if session.get('username') in active and str(key) == str(verkey):
         connection = pymysql.connect(host=sqlhost,
                              user=sqluser,
