@@ -724,10 +724,6 @@ def uploadpost():
         uuidx = uuid.uuid4()
         filename = file.filename
         extension = filename.rsplit('.', 1)[1]
-        if extension is '.php':
-            otk = hash(os.urandom(4096))
-            session['key'] = otk
-            return(render_template("upload.html", key=otk, username = session.get('username'), error = 2))
         newfilename = str(uuidx) + '.' + extension
         file.save(os.path.join('static/f/', newfilename))
         c.execute("INSERT INTO files VALUES (%s, %s, %s);", (str(newfilename), session.get('username'), str(filename)))
