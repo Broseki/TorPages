@@ -123,6 +123,12 @@
                 <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 &nbsp;Page deleted successfully!
             </div>
+            {% elif error == 8 %}
+            <div class="alert alert-danger fade in">
+                <a href="#" class="close" data-dismiss="alert">&times;</a>
+                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+                &nbsp;Site names must only contain letters and numbers, and must be less than 50 characters.
+            </div>
           {% endif %}
           <table class="table">
         <thead>
