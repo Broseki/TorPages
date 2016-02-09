@@ -143,7 +143,7 @@
             {% for dir in subdirs %}
               <tbody>
               <tr>
-                  <td><h3>{{ dir }}</h3></td><td><br><a href="/sites/deletesite/{{ dir }}"><button type="button" class="btn btn-danger">Delete {{ dir }}</button></a></td>
+                  <td style="padding-top: 1px; padding-bottom: 15px;"><h3>{{ dir }}</h3></td><td style="padding-top: 20px;"><a href="/sites/deletesite/{{ dir }}"><button type="button" class="btn btn-danger">Delete {{ dir }}</button></a></td>
               </tr>
             {% for y in dirs %}
             {% for file in y[dir] %}
