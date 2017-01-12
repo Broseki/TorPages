@@ -811,11 +811,7 @@ def changepassPost():
 
 app.secret_key = os.urandom(4096)   # Generates a random key for the session cookies
 
-while True:
-    try:
-        if __name__ == "__main__":
-            http_server = HTTPServer(WSGIContainer(app))
-            http_server.listen(5000)
-            IOLoop.instance().start()
-    except:
-        pass
+if __name__ == "__main__":
+    http_server = HTTPServer(WSGIContainer(app))
+    http_server.listen(5000)
+    IOLoop.instance().start()
